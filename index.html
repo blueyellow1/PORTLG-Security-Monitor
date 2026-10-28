@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PORTLG | Security Monitor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --panel: #122238;
+      --line: #263b54;
+      --text: #edf5ff;
+      --muted: #9eb0c7;
+      --blue: #39b8f5;
+      --green: #43d6a0;
+      --yellow: #ffd166;
+      --red: #ff7777;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.6 Arial, sans-serif;
+    }
+
+    header {
+      padding: 22px 5%;
+      background: #0e1c30;
+      border-bottom: 1px solid var(--line);
+    }
+
+    header h1 { margin: 0; letter-spacing: 1px; }
+    header p, .muted { color: var(--muted); }
+
+    main { max-width: 1050px; margin: auto; padding: 26px 18px 50px; }
+
+    .notice {
+      border: 1px solid #7c6330;
+      background: #302718;
+      color: #ffe4a0;
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-bottom: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      min-width: 0;
+    }
+
+    .panel h2 { margin-top: 0; font-size: 18px; }
+    .big { font-size: 25px; font-weight: bold; overflow-wrap: anywhere; }
+    .green { color: var(--green); }
+    .yellow { color: var(--yellow); }
+    .red { color: var(--red); }
+    .blue { color: var(--blue); }
+
+    button, select {
+      font: inherit;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 4px 4px 4px 0;
+    }
+
+    button {
+      border: 0;
+      background: var(--blue);
+      color: #04111e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #263d57;
+      color: var(--text);
+      border: 1px solid #3b5572;
+    }
+
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    .field {
+      display: block;
+      margin: 10px 0;
+      color: var(--muted);
+    }
+
+    select {
+      display: block;
+      width: 100%;
+      background: #091727;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .alert {
+      border-left: 4px solid var(--yellow);
+      padding: 12px;
+      background: #0b192b;
+      margin: 10px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .alert.high { border-color: var(--red); }
+    .alert.normal { border-color: var(--green); }
+
+    code, .address { overflow-wrap: anywhere; }
+    footer { text-align: center; color: var(--muted); padding: 24px; }
+    a { color: var(--blue); }
+
+    @media (max-width: 520px) {
+      .big { font-size: 21px; }
+      header { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛡️ PORTLG</h1>
+    <p>Security Monitor · Portaldot V3 Testnet</p>
+  </header>
+
+  <main>
+    <div class="notice">
+      <strong>Monitoring prototype:</strong>
+      Alerts on this page are illustrative until connected to verified,
+      live blockchain monitoring data. Do not treat demo alerts as proof of an attack.
+    </div>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Security Status</h2>
+        <div id="securityStatus" class="big green">MONITORING DEMO</div>
+        <p id="statusDescription" class="muted">
+          No live risk assessment has been performed.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>Contract Status</h2>
+        <div id="contractStatus" class="big">Not checked</div>
+        <p id="networkStatus" class="muted">Portaldot V3 Testnet</p>
+      </div>
+
+      <div class="panel">
+        <h2>Recommended Action</h2>
+        <div id="recommendation" class="big yellow">Verify activity</div>
+        <p id="recommendationDetails" class="muted">
+          Check transaction details before deciding to pause.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Contract Connection</h2>
+      <p class="muted">
+        This monitor reads the deployed PORTLGuardLite contract.
+        It does not automatically pause the contract.
+      </p>
+      <p class="address"><strong>Contract:</strong>
+        <code id="contractAddress">0x44406CD3e7ccE420c316D015FEE74303F16629E5</code>
+      </p>
+      <button id="connectBtn">Connect MetaMask & Check</button>
+      <button id="refreshBtn" class="secondary">Refresh Status</button>
+      <p id="connectionMessage" role="status" class="muted">
+        Wallet not connected. You can connect to read contract status.
+      </p>
+      <p><a href="https://scanner-testnet-v3.portaldot.dev/"
+        target="_blank" rel="noopener">Open Testnet Explorer ↗</a></p>
+    </section>
+
+    <section class="panel">
+      <h2>Security Alert Review</h2>
+      <p class="muted">
+        Select a review scenario to see the suggested response.
+        These are manual examples, not automatic threat detection.
+      </p>
+
+      <label class="field" for="scenario">Review scenario</label>
+      <select id="scenario">
+        <option value="normal">No suspicious evidence found</option>
+        <option value="investigate">Unusual activity needs investigation</option>
+        <option value="high">Verified critical threat — example only</option>
+      </select>
+      <button id="reviewBtn">Review Scenario</button>
+      <button id="resetBtn" class="secondary">Reset Example</button>
+
+      <div id="alertResult" class="alert normal">
+        <strong>Normal review</strong>
+        <p>No suspicious evidence has been entered into this demo.
+        This does not mean the blockchain has been fully monitored.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Evidence Checklist</h2>
+      <p class="muted">
+        Before recommending a pause, an owner should inspect evidence.
+      </p>
+      <label class="field"><input type="checkbox"> Verify the transaction hash and status in the explorer.</label>
+      <label class="field"><input type="checkbox"> Inspect contract events and affected addresses.</label>
+      <label class="field"><input type="checkbox"> Confirm the activity is unexpected and not legitimate use.</label>
+      <label class="field"><input type="checkbox"> Check whether the owner wallet is authorized to pause.</label>
+      <p class="muted">
+        A checked box is only a manual checklist item; it does not verify evidence automatically.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Recent Review Activity</h2>
+      <div id="activityLog" class="muted">No reviews yet.</div>
+    </section>
+  </main>
+
+  <footer>
+    PORTLG Security Monitor · Experimental Testnet Prototype · Not audited
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+  <script>
+    const CONTRACT_ADDRESS =
+      "0x44406CD3e7ccE420c316D015FEE74303F16629E5";
+    const CHAIN_ID = 420420777n;
+
+    const ABI = [
+      "function owner() view returns (address)",
+      "function paused() view returns (bool)"
+    ];
+
+    let provider;
+    let contract;
+    let wallet;
+
+    const $ = id => document.getElementById(id);
+
+    function logActivity(message) {
+      const entry = document.createElement("p");
+      entry.textContent = new Date().toLocaleString() + " — " + message;
+
+      if ($("activityLog").textContent === "No reviews yet.") {
+        $("activityLog").textContent = "";
+      }
+
+      $("activityLog").prepend(entry);
+    }
+
+    async function checkContract() {
+      if (!provider) {
+        if (!window.ethereum) {
+          throw new Error("MetaMask was not detected. Install or enable it.");
+        }
+        provider = new ethers.BrowserProvider(window.ethereum);
+      }
+
+      const network = await provider.getNetwork();
+
+      if (network.chainId !== CHAIN_ID) {
+        throw new Error("Switch MetaMask to Portaldot V3 Testnet.");
+      }
+
+      const code = await provider.getCode(CONTRACT_ADDRESS);
+      if (code === "0x") {
+        throw new Error("No contract code found at this address on this network.");
+      }
+
+      const reader = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+      const [paused, owner] = await Promise.all([
+        reader.paused(),
+        reader.owner()
+      ]);
+
+      $("contractStatus").textContent = paused ? "Paused" : "Active";
+      $("contractStatus").className = "big " + (paused ? "red" : "green");
+      $("networkStatus").textContent = "Network verified · Chain ID " + network.chainId;
+      $("connectionMessage").textContent =
+        "Contract read successful. " +
+        (wallet ? "Connected wallet: " + wallet : "Wallet not connected; read-only check.");
+
+      $("recommendation").textContent = paused
+        ? "Protected action unavailable"
+        : "Status check complete";
+      $("recommendationDetails").textContent = paused
+        ? "The contract reports Paused. The owner should investigate and unpause only when safe."
+        : "The contract reports Active. This monitor has not independently assessed attack risk.";
+
+      $("statusDescription").textContent =
+        "Live contract state read from the selected testnet. This is not a threat scan.";
+
+      logActivity("Contract status checked: " + (paused ? "Paused" : "Active"));
+      return { paused, owner };
+    }
+
+    async function connectAndCheck() {
+      try {
+        if (!window.ethereum) throw new Error("Install or enable MetaMask first.");
+        if (!window.ethers) throw new Error("Ethers.js could not load.");
+
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        wallet = await (await provider.getSigner()).getAddress();
+
+        await checkContract();
+        $("connectionMessage").textContent =
+          "Connected: " + wallet + " · Contract status verified.";
+      } catch (error) {
+        $("connectionMessage").textContent =
+          error.shortMessage || error.message;
+      }
+    }
+
+    function reviewScenario() {
+      const scenario = $("scenario").value;
+      const result = $("alertResult");
+      const status = $("securityStatus");
+      const recommendation = $("recommendation");
+
+      if (scenario === "normal") {
+        result.className = "alert normal";
+        result.innerHTML =
+          "<strong>Normal review</strong><p>No suspicious evidence was entered. " +
+          "This is not proof that the system is safe.</p>";
+        status.textContent = "DEMO: NORMAL";
+        status.className = "big green";
+        recommendation.textContent = "No pause recommended by this example";
+        $("recommendationDetails").textContent =
+          "Continue monitoring and verify real activity.";
+      } else if (scenario === "investigate") {
+        result.className = "alert";
+        result.innerHTML =
+          "<strong>Warning — investigate</strong><p>Example only: unusual activity " +
+          "requires checking transaction hashes, events, and expected user behavior.</p>";
+        status.textContent = "DEMO: WARNING";
+        status.className = "big yellow";
+        recommendation.textContent = "Investigate";
+        $("recommendationDetails").textContent =
+          "Gather evidence before deciding whether a pause is appropriate.";
+      } else {
+        result.className = "alert high";
+        result.innerHTML =
+          "<strong>High-risk example — not a real detection</strong><p>If a critical " +
+          "threat were independently verified, the owner could consider pausing " +
+          "the protected contract and investigate immediately.</p>";
+        status.textContent = "DEMO: HIGH RISK";
+        status.className = "big red";
+        recommendation.textContent = "Consider Pause after verification";
+        $("recommendationDetails").textContent =
+          "This scenario is simulated. No attack was detected by this page.";
+      }
+
+      logActivity("Manual review scenario selected: " + scenario);
+    }
+
+    $("connectBtn").addEventListener("click", connectAndCheck);
+    $("refreshBtn").addEventListener("click", async () => {
+      try {
+        await checkContract();
+      } catch (error) {
+        $("connectionMessage").textContent =
+          error.shortMessage || error.message;
+      }
+    });
+    $("reviewBtn").addEventListener("click", reviewScenario);
+    $("resetBtn").addEventListener("click", () => {
+      $("scenario").value = "normal";
+      reviewScenario();
+    });
+  </script>
+</body>
+</html>
